@@ -10,8 +10,21 @@
         <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/netty_learning/pom.xml" />
+        <option value="$PROJECT_DIR$/rpc-001/pom.xml" />
+        <option value="$PROJECT_DIR$/rpc-002/pom.xml" />
+        <option value="$PROJECT_DIR$/rpc-003/pom.xml" />
+      </set>
+    </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="SwUserDefinedSpecifications">
+    <option name="specTypeByUrl">
+      <map />
+    </option>
   </component>
 </project>
