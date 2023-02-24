@@ -1,0 +1,1 @@
+loadBalance=github.mumu.cluster.loadbalance.loadbalancer.ConsistentHashLoadBalance

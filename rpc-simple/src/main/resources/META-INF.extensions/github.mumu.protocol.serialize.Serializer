@@ -1,0 +1,3 @@
+kyro=github.mumu.protocol.serialize.kyro.KryoSerializer
+protostuff=github.mumu.protocol.serialize.protostuff.ProtostuffSerializer
+hessian=github.mumu.protocol.serialize.hessian.HessianSerializer

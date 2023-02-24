@@ -1,0 +1,1 @@
+netty=github.mumu.transport.netty.client.NettyRpcClient
