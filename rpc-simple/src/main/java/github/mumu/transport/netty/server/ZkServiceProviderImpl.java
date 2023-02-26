@@ -25,8 +25,8 @@ public class ZkServiceProviderImpl implements ServiceProvider {
      * key: rpc service name(interface name + version + group)
      * value: service object
      */
-    private final Map<String, Object> serviceMap;
-    private final Set<String> registeredService;
+    private final Map<String, Object> serviceMap;//存放所有的服务
+    private final Set<String> registeredService;//存放已经注册过的服务
     private final ServiceRegistry serviceRegistry;
 
     public ZkServiceProviderImpl() {
@@ -59,8 +59,11 @@ public class ZkServiceProviderImpl implements ServiceProvider {
     public void publishService(RpcServiceConfig rpcServiceConfig) {
         try {
             String host = InetAddress.getLocalHost().getHostAddress();
+            //添加到ConcurrentHashMap，如果此前已经注册过就返回
             this.addService(rpcServiceConfig);
-            serviceRegistry.registerService(rpcServiceConfig.getRpcServiceName(), new InetSocketAddress(host, NettyRpcServer.PORT));
+            //在zookeeper上注册服务
+            serviceRegistry.registerService(rpcServiceConfig.getRpcServiceName(),
+                    new InetSocketAddress(host, NettyRpcServer.PORT));
         } catch (UnknownHostException e) {
             log.error("occur exception when getHostAddress", e);
         }

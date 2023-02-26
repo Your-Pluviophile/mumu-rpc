@@ -19,17 +19,8 @@ public class RpcResponse<T> implements Serializable {
 
     private static final long serialVersionUID = 715745410605631233L;
     private String requestId;
-    /**
-     * response code
-     */
     private Integer code;//状态码
-    /**
-     * response message
-     */
-    private String message;//信息
-    /**
-     * response body
-     */
+    private String message;//提示信息
     private T data;
 
     public static <T> RpcResponse<T> success(T data, String requestId) {

@@ -1,7 +1,7 @@
 package github.mumu.cluster.zk.util;
 
-import github.javaguide.enums.RpcConfigEnum;
-import github.javaguide.utils.PropertiesFileUtil;
+import github.mumu.common.enums.RpcConfigEnum;
+import github.mumu.common.utils.PropertiesFileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -20,12 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Curator(zookeeper client) utils
- *
- * @author shuang.kou
- * @createTime 2020年05月31日 11:38:00
- */
+
 @Slf4j
 public final class CuratorUtils {
 
@@ -50,7 +45,8 @@ public final class CuratorUtils {
             if (REGISTERED_PATH_SET.contains(path) || zkClient.checkExists().forPath(path) != null) {
                 log.info("The node already exists. The node is:[{}]", path);
             } else {
-                //eg: /my-rpc/github.javaguide.HelloService/127.0.0.1:9999
+                //eg: /my-rpc/github.mumu.HelloService/127.0.0.1:9999
+                //创建持久节点
                 zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path);
                 log.info("The node was created successfully. The node is:[{}]", path);
             }

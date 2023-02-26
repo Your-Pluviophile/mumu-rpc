@@ -1,6 +1,5 @@
 package github.mumu.proxy;
 
-
 import github.mumu.common.enums.RpcErrorMessageEnum;
 import github.mumu.common.enums.RpcResponseCodeEnum;
 import github.mumu.config.RpcServiceConfig;
@@ -18,14 +17,6 @@ import java.lang.reflect.Proxy;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Dynamic proxy class.
- * When a dynamic proxy object calls a method, it actually calls the following invoke method.
- * It is precisely because of the dynamic proxy that the remote method called by the client is like calling the local method (the intermediate process is shielded)
- *
- * @author shuang.kou
- * @createTime 2020年05月10日 19:01:00
- */
 @Slf4j
 public class RpcClientProxy implements InvocationHandler {
 
@@ -74,15 +65,15 @@ public class RpcClientProxy implements InvocationHandler {
                 .version(rpcServiceConfig.getVersion())
                 .build();
         RpcResponse<Object> rpcResponse = null;
+        //每当Client执行sendMessage()方法时，都会调用代理对象的invoke()
         if (rpcRequestTransport instanceof NettyRpcClient) {
-            CompletableFuture<RpcResponse<Object>> completableFuture = (CompletableFuture<RpcResponse<Object>>) rpcRequestTransport.sendRpcRequest(rpcRequest);
-            //阻塞 等待 completableFuture 返回执行结果。
+            CompletableFuture<RpcResponse<Object>> completableFuture =
+                    (CompletableFuture<RpcResponse<Object>>) rpcRequestTransport.sendRpcRequest(rpcRequest);
+            //阻塞 等待chanelRead -> unprocessedRequest -> 执行complete()通知
+            //返回执行结果。
             rpcResponse = completableFuture.get();
         }
-//        if (rpcRequestTransport instanceof SocketRpcClient) {
-//            rpcResponse = (RpcResponse<Object>) rpcRequestTransport.sendRpcRequest(rpcRequest);
-//        }
-        this.check(rpcResponse, rpcRequest);
+        this.check(rpcResponse, rpcRequest);//检查是否为空？请求id是否相同？状态码成功或失败？
         return rpcResponse.getData();
     }
 

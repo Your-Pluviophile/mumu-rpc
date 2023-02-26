@@ -38,15 +38,17 @@ public class NettyRpcServerHandler extends ChannelInboundHandlerAdapter {
                 RpcMessage rpcMessage = new RpcMessage();
                 rpcMessage.setCodec(SerializationTypeEnum.HESSIAN.getCode());
                 rpcMessage.setCompress(CompressTypeEnum.GZIP.getCode());
+                //如果是心跳检测报文，回复pong
                 if (messageType == RpcConstants.HEARTBEAT_REQUEST_TYPE) {
                     rpcMessage.setMessageType(RpcConstants.HEARTBEAT_RESPONSE_TYPE);
                     rpcMessage.setData(RpcConstants.PONG);
                 } else {
                     RpcRequest rpcRequest = (RpcRequest) ((RpcMessage) msg).getData();
-                    // Execute the target method (the method the client needs to execute) and return the method result
+                    // 真正进行方法调用与业务处理
                     Object result = rpcRequestHandler.handle(rpcRequest);
                     log.info(String.format("server get result: %s", result.toString()));
                     rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
+                    //向客户端回复处理结果
                     if (ctx.channel().isActive() && ctx.channel().isWritable()) {
                         RpcResponse<Object> rpcResponse = RpcResponse.success(result, rpcRequest.getRequestId());
                         rpcMessage.setData(rpcResponse);
@@ -60,6 +62,7 @@ public class NettyRpcServerHandler extends ChannelInboundHandlerAdapter {
             }
         } finally {
             //Ensure that ByteBuf is released, otherwise there may be memory leaks
+            //防止内存溢出
             ReferenceCountUtil.release(msg);
         }
     }

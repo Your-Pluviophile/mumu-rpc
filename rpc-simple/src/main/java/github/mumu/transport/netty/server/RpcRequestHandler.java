@@ -23,14 +23,6 @@ public class RpcRequestHandler {
         Object service = serviceProvider.getService(rpcRequest.getRpcServiceName());
         return invokeTargetMethod(rpcRequest, service);
     }
-
-    /**
-     * get method execution results
-     *
-     * @param rpcRequest client request
-     * @param service    service object
-     * @return the result of the target method execution
-     */
     private Object invokeTargetMethod(RpcRequest rpcRequest, Object service) {
         Object result;
         try {

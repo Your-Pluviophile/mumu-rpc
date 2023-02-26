@@ -41,6 +41,7 @@ public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    //channelRead()方法将会在收到消息时被调用
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try{
             log.info("client receive msg: [{}]", msg);
@@ -53,31 +54,25 @@ public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
                     //如果是正常的消息回复
                 } else if (messageType == RpcConstants.RESPONSE_TYPE) {
                     RpcResponse<Object> rpcResponse = (RpcResponse<Object>) tmp.getData();
-                    //这个方法的含义是：如果执行还没结束，就以指定的值作为其执行结果，并触发依赖它的其他阶段执行。
-                    //因为我们并没有交给 completableFuture 任何任务，所以其实就是用事件（channelRead）驱动一下异步工作。
-                    //这时 invoke 方法中的 completableFuture.get(); 就可以得到 rpcResponse 了。
                     unprocessedRequests.complete(rpcResponse);
                 }
             }
         }finally {
-            //ReferenceCountUtil.release()其实是ByteBuf.release()方法（从ReferenceCounted接口继承而来）的包装。
-            // netty4中的ByteBuf使用了引用计数（netty4实现了一个可选的ByteBuf池），每一个新分配的ByteBuf的引用计数值为1，
-            // 每对这个ByteBuf对象增加一个引用，需要调用ByteBuf.retain()方法，而每减少一个引用，需要调用ByteBuf.release()方法。
-            // 当这个ByteBuf对象的引用计数值为0时，表示此对象可回收。
+            //引用计数值为0时，表示此对象可回收。
             ReferenceCountUtil.release(msg);
         }
     }
     // 如果 IdleStateHandler 检测到了超时事件，则会触发 userEventTriggered 方法
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        //判断此时心跳检测传回来的状态
+        //判断检测到的信息
         if (evt instanceof IdleStateEvent) {
             IdleState state = ((IdleStateEvent) evt).state();
             if (state == IdleState.WRITER_IDLE) {
                 log.info("write idle happen [{}]", ctx.channel().remoteAddress());
                 //重用连接，避免新建一个tcp长连接
-                //向服务端发送心跳检测报文
                 Channel channel = nettyRpcClient.getChannel((InetSocketAddress) ctx.channel().remoteAddress());
+                //向服务端发送一个ping报文（说一下自己还活着）
                 RpcMessage rpcMessage = new RpcMessage();
                 rpcMessage.setCodec(SerializationTypeEnum.PROTOSTUFF.getCode());
                 rpcMessage.setCompress(CompressTypeEnum.GZIP.getCode());

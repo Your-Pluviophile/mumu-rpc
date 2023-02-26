@@ -6,12 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.concurrent.*;
 
-/**
- * 创建 ThreadPool(线程池) 的工具类.
- *
- * @author shuang.kou
- * @createTime 2020年05月26日 16:00:00
- */
 @Slf4j
 public final class ThreadPoolFactoryUtil {
 

@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+/**
+ * 借鉴了dubbo的实现
+ */
 @Slf4j
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     private final ConcurrentHashMap<String, ConsistentHashSelector> selectors = new ConcurrentHashMap<>();
@@ -27,7 +29,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         String rpcServiceName = rpcRequest.getRpcServiceName();
         // 以调用方法名为key,获取一致性hash选择器
         ConsistentHashSelector selector = selectors.get(rpcServiceName);
-        //// 若不存在则创建新的选择器
+        //若不存在则创建新的选择器
         if (selector == null || selector.identityHashCode != identityHashCode) {
             // 创建ConsistentHashSelector时会生成所有虚拟结点
             selectors.put(rpcServiceName, new ConsistentHashSelector(serviceAddresses, 160, identityHashCode));
@@ -36,10 +38,10 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
         return selector.select(rpcServiceName + Arrays.stream(rpcRequest.getParameters()));
     }
-
+    //生成虚拟节点，以treemap形式保存
     static class ConsistentHashSelector {
         private final TreeMap<Long, String> virtualInvokers;// 虚拟结点
-
+        //调用列表的hashcode
         private final int identityHashCode;// hashCode
 
         ConsistentHashSelector(List<String> invokers, int replicaNumber, int identityHashCode) {
@@ -89,6 +91,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
         //根据hashCode选择结点
         public String selectForKey(long hashCode) {
+            //tailMap(K fromKey) 方法用于返回此映射，其键大于或等于fromKey的部分视图。
             Map.Entry<Long, String> entry = virtualInvokers.tailMap(hashCode, true).firstEntry();
             // 若不存在，那么选择treeMap中第一个结点
             if (entry == null) {

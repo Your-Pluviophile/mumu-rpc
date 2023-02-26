@@ -12,25 +12,15 @@ import lombok.*;
 @ToString
 public class RpcMessage {
 
-    /**
-     * rpc message type
-     */
+    //消息类型
     private byte messageType;
-    /**
-     * serialization type
-     */
+    //编码与解码方式
     private byte codec;
-    /**
-     * compress type
-     */
+    //压缩格式
     private byte compress;
-    /**
-     * request id
-     */
+    //请求id
     private int requestId;
-    /**
-     * request data
-     */
+    //数据 RpcRequest or RpcResponse
     private Object data;
 
 }

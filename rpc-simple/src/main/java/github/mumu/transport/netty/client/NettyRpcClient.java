@@ -54,8 +54,8 @@ public class NettyRpcClient implements RpcRequestTransport {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline p = ch.pipeline();
-                        // 如果5s之内没有发送数据给服务端，就发送一次心跳请求,发送一个心跳信息过去，以防止服务端关闭ctx
-                        p.addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
+                        // 如果15s之内没有发送数据给服务端，就发送一次心跳请求,发送一个心跳信息过去，以防止服务端关闭ctx
+                        p.addLast(new IdleStateHandler(0, 15, 0, TimeUnit.SECONDS));
                         p.addLast(new RpcMessageEncoder());
                         p.addLast(new RpcMessageDecoder());
                         p.addLast(new NettyRpcClientHandler());
@@ -73,6 +73,9 @@ public class NettyRpcClient implements RpcRequestTransport {
         InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest);
         // get  server address related channel
         Channel channel = getChannel(inetSocketAddress);
+        //于上述的服务端心跳处理器，在触发读超时后会关闭通信管道，这导致客户端缓存的连接状态会出现不可用的情况，
+        // 为了让客户端一直只能取到可用连接就需要对从缓存中获取到的连接做状态判断，如果可用直接返回，
+        // 如果不可用则将连接从可用列表中删除然后取下一个可用连接。
         if (channel.isActive()) {
             // put unprocessed request
             unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);
@@ -111,6 +114,8 @@ public class NettyRpcClient implements RpcRequestTransport {
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 log.info("The client has connected [{}] successful!", inetSocketAddress.toString());
+                //如果执行还没结束，就以指定的值作为其执行结果，并触发依赖它的其他阶段执行
+                //complete用来告知CompletableFuture任务完成。会立即get()到
                 completableFuture.complete(future.channel());
             } else {
                 throw new IllegalStateException();
